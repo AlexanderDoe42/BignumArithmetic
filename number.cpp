@@ -25,6 +25,20 @@ void Number::print() {
     std::cout << std::endl;
 }
 
+Number Number::operator+ (const Number& arg) {
+    Number result;
+    return result;
+}
+
+Number& Number::operator= (const Number& arg) {
+    delete[] num;
+    length = arg.length;
+    num = new short[length];
+    for (int i = 0; i < length; i++)
+        num[i] = arg.num[i];
+    return *this;
+}
+
 Number::~Number() {
     delete[] num;
 }
