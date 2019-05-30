@@ -11,6 +11,7 @@ public:
     Number(Number&&);                   //move constructor
     void print();
     Number operator+ (const Number&);
+    Number operator* (const Number&);
     Number& operator= (const Number&);  //copy assignment
     Number& operator= (Number&&);       //move assignment
 

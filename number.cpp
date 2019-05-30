@@ -20,7 +20,6 @@ Number::Number(std::string& num_str) {
 }
 
 Number::Number(const Number& arg) {
-    std::cout << "copy constructor\n";
     delete[] num;
     length = arg.length;
     num = new short[length];
@@ -29,7 +28,6 @@ Number::Number(const Number& arg) {
 }
 
 Number::Number(Number&& arg) {
-    std::cout << "move constructor\n";
     delete[] num;
     length = arg.length;
     num = arg.num;
@@ -43,7 +41,6 @@ void Number::print() {
 }
 
 Number Number::operator+ (const Number& arg) {
-    std::cout << "operator+\n";
     int newlen = (length > arg.length) ? length+1 : arg.length+1;
     short * newnum = new short[newlen];
     for (int i = 0; i < length; i++)
@@ -64,14 +61,53 @@ Number Number::operator+ (const Number& arg) {
 
     Number result;
     delete[] result.num;
-    result.num = newnum;
+    if (newnum[newlen-1] == 0) {
+        --newlen;
+        result.num = new short[newlen];
+        for (int i = 0; i < newlen; i++)
+            result.num[i] = newnum[i];
+        delete[] newnum;
+    } else {
+        result.num = newnum;
+        newnum = NULL;
+    }
+    result.length = newlen;
+
+    return result;
+}
+
+Number Number::operator* (const Number& arg) {
+    int newlen = length + arg.length;
+    short * newnum = new short[newlen];
+
+    for (int j = 0; j < arg.length; j++) {
+        int tmp = 0;
+        for (int i = 0; i < length; i++) {
+            short sum = newnum[i+j] + num[i] * arg.num[j] + tmp;
+            newnum[i+j] = sum % 10;
+            tmp = sum / 10;
+        }
+        newnum[length+j] = tmp;
+    }
+
+    Number result;
+    delete[] result.num;
+    if (newnum[newlen-1] == 0) {
+        --newlen;
+        result.num = new short[newlen];
+        for (int i = 0; i < newlen; i++)
+            result.num[i] = newnum[i];
+        delete[] newnum;
+    } else {
+        result.num = newnum;
+        newnum = NULL;
+    }
     result.length = newlen;
 
     return result;
 }
 
 Number& Number::operator= (const Number& arg) {
-    std::cout << "copy operator=\n";
     delete[] num;
     length = arg.length;
     num = new short[length];
@@ -81,7 +117,6 @@ Number& Number::operator= (const Number& arg) {
 }
 
 Number& Number::operator= (Number&& arg) {
-    std::cout << "move operator=\n";
     delete[] num;
     length = arg.length;
     num = arg.num;
