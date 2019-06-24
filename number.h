@@ -5,6 +5,8 @@ private:
     int length;
     short * num; // main number
     short char_to_short(char c);
+    Number addition(const Number&);
+    Number subtraction(const Number&, const Number&); //the first number should be greater
 
 public:
     Number();
@@ -19,6 +21,7 @@ public:
     bool operator== (const Number&);
     Number& operator= (const Number&);  //copy assignment
     Number& operator= (Number&&);       //move assignment
+    Number abs() const;
 
     ~Number();
 };
