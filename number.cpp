@@ -140,8 +140,27 @@ void Number::print() {
     std::cout << std::endl;
 }
 
-Number Number::operator+ (const Number& arg) {
-    Number result = addition(arg);
+Number Number::operator+ (const Number& arg)
+{
+    Number result;
+
+    if ((negativeNum && arg.negativeNum) || (!negativeNum && !arg.negativeNum)) {
+        result = addition(arg);
+        if (negativeNum)
+            result.negativeNum = true;
+    } else {
+        if (this->abs() == arg.abs())
+            return Number();
+        if (this->abs() > arg.abs()) {
+            result = subtraction(*this, arg);
+            if (negativeNum)
+                result.negativeNum = true;
+        } else {
+            result = subtraction(arg, *this);
+            if (!negativeNum)
+                result.negativeNum = true;
+        }
+    }
 
     return result;
 }
@@ -154,7 +173,7 @@ Number Number::operator- (const Number& arg)
     Number result;
 
     if ((negativeNum && arg.negativeNum) || (!negativeNum && !arg.negativeNum)) {
-        if (abs() > arg.abs()) {
+        if (this->abs() > arg.abs()) {
             result = subtraction(*this, arg);
             if (negativeNum)
                 result.negativeNum = true;

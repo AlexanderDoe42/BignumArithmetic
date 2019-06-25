@@ -11,6 +11,6 @@ main() {
     getline(std::cin, str);
     Number n2(str);
 
-    n1 = n1 - n2;
+    n1 = n1 + n2;
     n1.print();
 }
