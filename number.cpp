@@ -2,7 +2,8 @@
 
 #include "number.h"
 
-short Number::char_to_short(char c) {
+short Number::char_to_short(char c)
+{
     return c-'0';
 }
 
@@ -92,14 +93,16 @@ Number Number::subtraction(const Number& arg1, const Number& arg2)
     return result;
 }
 
-Number::Number() {
+Number::Number()
+{
     negativeNum = false;
     length = 1;
     num = new short[1];
     num[0] = 0;
 }
 
-Number::Number(std::string& num_str) {
+Number::Number(std::string& num_str)
+{
     if (num_str[0] == '-') {
         negativeNum = true;
         length = num_str.length() - 1;
@@ -117,7 +120,8 @@ Number::Number(std::string& num_str) {
         negativeNum = false;
 }
 
-Number::Number(const Number& arg) {
+Number::Number(const Number& arg)
+{
     negativeNum = arg.negativeNum;
     length = arg.length;
     num = new short[length];
@@ -125,14 +129,16 @@ Number::Number(const Number& arg) {
         num[i] = arg.num[i];
 }
 
-Number::Number(Number&& arg) {
+Number::Number(Number&& arg)
+{
     negativeNum = arg.negativeNum;
     length = arg.length;
     num = arg.num;
     arg.num = NULL;
 }
 
-void Number::print() {
+void Number::print()
+{
     if (negativeNum)
         std::cout << '-';
     for (int i = length-1; i >= 0; i--)
@@ -191,7 +197,11 @@ Number Number::operator- (const Number& arg)
     return result;
 }
 
-Number Number::operator* (const Number& arg) {
+Number Number::operator* (const Number& arg)
+{
+    if (*this == Number() || arg == Number())
+        return Number();
+
     int newlen = length + arg.length;
     short * newnum = new short[newlen];
 
@@ -219,10 +229,14 @@ Number Number::operator* (const Number& arg) {
     }
     result.length = newlen;
 
+    if ((negativeNum && !arg.negativeNum) || (!negativeNum && arg.negativeNum))
+        result.negativeNum = true;
+
     return result;
 }
 
-bool Number::operator> (const Number& arg) {
+bool Number::operator> (const Number& arg)
+{
     if (*this == arg)
         return false;
 
@@ -259,7 +273,8 @@ bool Number::operator> (const Number& arg) {
     return result;
 }
 
-bool Number::operator== (const Number& arg) {
+bool Number::operator== (const Number& arg) const
+{
     if ( (length != arg.length) || (negativeNum && !arg.negativeNum) ||
          (!negativeNum && arg.negativeNum) )
         return false;
@@ -271,7 +286,8 @@ bool Number::operator== (const Number& arg) {
     return true;
 }
 
-Number& Number::operator= (const Number& arg) {
+Number& Number::operator= (const Number& arg)
+{
     delete[] num;
     negativeNum = arg.negativeNum;
     length = arg.length;
@@ -281,7 +297,8 @@ Number& Number::operator= (const Number& arg) {
     return *this;
 }
 
-Number& Number::operator= (Number&& arg) {
+Number& Number::operator= (Number&& arg)
+{
     delete[] num;
     negativeNum = arg.negativeNum;
     length = arg.length;
@@ -290,12 +307,14 @@ Number& Number::operator= (Number&& arg) {
     return *this;
 }
 
-Number Number::abs() const {
+Number Number::abs() const
+{
     Number result = *this;
     result.negativeNum = false;
     return result;
 }
 
-Number::~Number() {
+Number::~Number()
+{
     delete[] num;
 }

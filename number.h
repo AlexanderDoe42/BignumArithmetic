@@ -18,7 +18,7 @@ public:
     Number operator- (const Number&);
     Number operator* (const Number&);
     bool operator> (const Number&);
-    bool operator== (const Number&);
+    bool operator== (const Number&) const;
     Number& operator= (const Number&);  //copy assignment
     Number& operator= (Number&&);       //move assignment
     Number abs() const;
