@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 
 #include "number.h"
 
@@ -11,8 +12,15 @@ Number Number::addition(const Number& arg)
 {
     int newlen = (length > arg.length) ? length+1 : arg.length+1;
     short * newnum = new short[newlen];
-    for (int i = 0; i < length; i++)
+    int i = 0;
+    while (i < length) {
         newnum[i] = num[i];
+        i++;
+    }
+    while (i < newlen) {
+        newnum[i] = 0;
+        i++;
+    }
 
     short tmp = 0;
     for (int i = 0; i < arg.length; i++) {
@@ -37,7 +45,7 @@ Number Number::addition(const Number& arg)
         delete[] newnum;
     } else {
         result.num = newnum;
-        newnum = NULL;
+        newnum = nullptr;
     }
     result.length = newlen;
 
@@ -93,6 +101,47 @@ Number Number::subtraction(const Number& arg1, const Number& arg2)
     return result;
 }
 
+Number Number::halfOf(const Number& arg)
+{
+    if (arg == Number() || arg == Number("1"))
+        return Number();
+
+    Number newnum;
+    delete[] newnum.num;
+    int newlen = arg.length;
+    newnum.num = new short[newlen];
+    for (int i = 0; i < newlen; i++)
+        newnum.num[i] = 0;
+
+    short tmp = 0;
+    for (int i = arg.length -1; i >= 0; i--) {
+        newnum.num[i] = (tmp + arg.num[i]) / 2;
+        tmp = (arg.num[i] % 2) * 10;
+    }
+
+    Number result;
+    delete[] result.num;
+    if (newnum.num[newlen-1] == 0) {
+        newlen--;
+        result.num = new short[newlen];
+        for (int i = 0; i < newlen; i++)
+            result.num[i] = newnum.num[i];
+    } else {
+        result.num = newnum.num;
+        newnum.num = nullptr;
+    }
+    result.length = newlen;
+
+    return result;
+}
+
+Number Number::abs(const Number & arg)
+{
+    Number result = arg;
+    result.negativeNum = false;
+    return result;
+}
+
 Number::Number()
 {
     negativeNum = false;
@@ -120,6 +169,27 @@ Number::Number(std::string& num_str)
         negativeNum = false;
 }
 
+Number::Number(const char * num_str)
+{
+    length = 0;
+    for (int i = 0; num_str[i] != '\0'; i++)
+        length++;
+    if (num_str[0] == '-') {
+        negativeNum = true;
+        length--;
+        num = new short[length];
+        for (int i = 0; i < length; i++)
+            num[i] = char_to_short(num_str[length-i]);
+    } else {
+        negativeNum = false;
+        num = new short[length];
+        for (int i = 0; i < length; i++)
+            num[i] = char_to_short(num_str[length-1-i]);
+    }
+    if (length == 1 && num[0] == 0)
+        negativeNum = false;
+}
+
 Number::Number(const Number& arg)
 {
     negativeNum = arg.negativeNum;
@@ -134,7 +204,7 @@ Number::Number(Number&& arg)
     negativeNum = arg.negativeNum;
     length = arg.length;
     num = arg.num;
-    arg.num = NULL;
+    arg.num = nullptr;
 }
 
 void Number::print()
@@ -205,6 +275,9 @@ Number Number::operator* (const Number& arg)
     int newlen = length + arg.length;
     short * newnum = new short[newlen];
 
+    for (int i = 0; i < newlen; i++)
+        newnum[i] = 0;
+
     for (int j = 0; j < arg.length; j++) {
         int tmp = 0;
         for (int i = 0; i < length; i++) {
@@ -225,7 +298,7 @@ Number Number::operator* (const Number& arg)
         delete[] newnum;
     } else {
         result.num = newnum;
-        newnum = NULL;
+        newnum = nullptr;
     }
     result.length = newlen;
 
@@ -233,6 +306,59 @@ Number Number::operator* (const Number& arg)
         result.negativeNum = true;
 
     return result;
+}
+
+Number Number::operator/ (const Number & arg)
+{
+    if (arg == Number()) {
+        printf("Fatal error!");
+        return arg;
+    }
+
+    if (*this == Number())
+        return Number();
+
+    // ----dumb division---------------
+    // Number result = *this;
+    // while (*this < result * arg) {
+    //     result--;
+    // }
+    //---------------------------------
+
+    Number result = *this;
+
+    Number minSearchBoundary("0");
+    Number maxSearchBoundary = *this;
+
+    while (abs(*this - result * arg) >= arg ) {
+        if (result * arg > *this) {
+            maxSearchBoundary = result;
+            result = result - halfOf(result - minSearchBoundary);
+        } else if (result * arg < *this) {
+            minSearchBoundary = result;
+            result = result + halfOf(maxSearchBoundary - result);
+        }
+    }
+
+    if (result * arg > *this)
+        result--;
+
+    if ((negativeNum && !arg.negativeNum) || (!negativeNum && arg.negativeNum))
+        result.negativeNum = true;
+
+    return result;
+}
+
+Number Number::operator++ (int)
+{
+    *this = *this + Number("1");
+    return *this;
+}
+
+Number Number::operator-- (int)
+{
+    *this = *this - Number("1");
+    return *this;
 }
 
 bool Number::operator> (const Number& arg)
@@ -273,6 +399,20 @@ bool Number::operator> (const Number& arg)
     return result;
 }
 
+bool Number::operator< (const Number& arg)
+{
+    if (*this > arg || *this == arg)
+        return false;
+    return true;
+}
+
+bool Number::operator>= (const Number& arg)
+{
+    if (*this == arg || *this > arg)
+        return true;
+    return false;
+}
+
 bool Number::operator== (const Number& arg) const
 {
     if ( (length != arg.length) || (negativeNum && !arg.negativeNum) ||
@@ -283,6 +423,13 @@ bool Number::operator== (const Number& arg) const
         if (num[i] != arg.num[i])
             return false;
 
+    return true;
+}
+
+bool Number::operator!= (const Number& arg) const
+{
+    if (*this == arg)
+        return false;
     return true;
 }
 
@@ -303,7 +450,7 @@ Number& Number::operator= (Number&& arg)
     negativeNum = arg.negativeNum;
     length = arg.length;
     num = arg.num;
-    arg.num = NULL;
+    arg.num = nullptr;
     return *this;
 }
 
