@@ -1,4 +1,2 @@
-My project
-blabla
-flsfjals
-jhdj
+This is a simple calculator for large integers.
+Available operators: "+", "-", "*", "/".
