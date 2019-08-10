@@ -1,7 +1,7 @@
-#include <iostream>
-#include <string>
+ #include <iostream>
+ #include <string>
 
-#include "number.h"
+ #include "number.h"
 
 short Number::char_to_short(char c)
 {
@@ -10,127 +10,97 @@ short Number::char_to_short(char c)
 
 Number Number::addition(const Number& arg)
 {
-    int newlen = (length > arg.length) ? length+1 : arg.length+1;
-    short * newnum = new short[newlen];
-    int i = 0;
-    while (i < length) {
-        newnum[i] = num[i];
-        i++;
-    }
-    while (i < newlen) {
-        newnum[i] = 0;
-        i++;
-    }
+    Number result;
+    result.length = (length > arg.length) ? length+1 : arg.length+1;
+    for (List<short>::iterator it = num.begin(); it != num.end(); it++)
+        result.num.add(*it);
+    while (result.num.size() != result.length)
+        result.num.add_front(0);
 
+    List<short>::iterator it_result_num = result.num.last();
+    List<short>::iterator it_arg_num = arg.num.last();
     short tmp = 0;
     for (int i = 0; i < arg.length; i++) {
-        short sum = newnum[i] + arg.num[i] + tmp;
-        newnum[i] = sum % 10;
+        short sum = *it_result_num + *it_arg_num + tmp;
+        *it_result_num = sum % 10;
         tmp = (sum > 9) ? 1 : 0;
+        it_result_num--;
+        it_arg_num--;
     }
 
-    for (int i = arg.length; i < newlen && tmp == 1; i++) {
-        short sum = newnum[i] + tmp;
-        newnum[i] = sum % 10;
+    for (int i = arg.length; i < result.length && tmp == 1; i++) {
+        short sum = *it_result_num + tmp;
+        *it_result_num = sum % 10;
         tmp = (sum > 9) ? 1 : 0;
+        it_result_num--;
+        it_arg_num--;
     }
 
-    Number result;
-    delete[] result.num;
-    if (newnum[newlen-1] == 0) {
-        --newlen;
-        result.num = new short[newlen];
-        for (int i = 0; i < newlen; i++)
-            result.num[i] = newnum[i];
-        delete[] newnum;
-    } else {
-        result.num = newnum;
-        newnum = nullptr;
+    if (*result.num.begin() == 0) {
+        --result.length;
+        result.num.remove(result.num.begin());
     }
-    result.length = newlen;
 
     return result;
 }
 
 Number Number::subtraction(const Number& arg1, const Number& arg2)
 {
-    int newlen = arg1.length;
-    short * newnum = new short[newlen];
-    short tmp = 0;
-    int i = 0;
-    while (i < arg2.length) {
-        if (arg1.num[i] >= arg2.num[i] + tmp) {
-            newnum[i] = arg1.num[i] - arg2.num[i] - tmp;
-            tmp = 0;
-        } else {
-            newnum[i] = 10+arg1.num[i] - arg2.num[i] - tmp;
-            tmp = 1;
-        }
-        i++;
-    }
-    while (i < arg1.length && tmp == 1) {
-        if (arg1.num[i] >= tmp) {
-            newnum[i] = arg1.num[i] - tmp;
-            tmp = 0;
-        } else {
-            newnum[i] = 10+arg1.num[i] - tmp;
-            tmp = 1;
-        }
-        i++;
-    }
-    while (i < arg1.length) {
-        newnum[i] = arg1.num[i];
-        i++;
-    }
-
-    for (int i = newlen-1; i >= 0; i--) {
-        if (newnum[i] != 0) {
-            newlen = i+1;
-            break;
-        }
-    }
-
     Number result;
-    delete[] result.num;
-    result.length = newlen;
-    result.num = new short[newlen];
-    for (int i = 0; i < newlen; i++)
-        result.num[i] = newnum[i];
-    delete[] newnum;
+    short tmp = 0;
+    List<short>::iterator it_arg1_num = arg1.num.last();
+    List<short>::iterator it_arg2_num = arg2.num.last();
+    int i = 0;
+    while (it_arg2_num != arg2.num.end()) {
+        if (*it_arg1_num >= *it_arg2_num + tmp) {
+            result.num.add_front(*it_arg1_num - *it_arg2_num - tmp);
+            tmp = 0;
+        } else {
+            result.num.add_front(10 + *it_arg1_num - *it_arg2_num - tmp);
+            tmp = 1;
+        }
+        it_arg1_num--;
+        it_arg2_num--;
+    }
+    while (it_arg1_num != arg1.num.end() && tmp == 1) {
+        if (*it_arg1_num >= tmp) {
+            result.num.add_front(*it_arg1_num - tmp);
+            tmp = 0;
+        } else {
+            result.num.add_front(10 + *it_arg1_num - tmp);
+            tmp = 1;
+        }
+        it_arg1_num--;
+    }
+    while (it_arg1_num != arg1.num.end()) {
+        result.num.add_front(*it_arg1_num);
+        it_arg1_num--;
+    }
+
+    List<short>::iterator it = result.num.begin();
+    while (*it == 0) {
+        result.num.remove(it);
+        it++;
+    }
+
+    result.length = result.num.size();
 
     return result;
 }
 
 Number Number::halfOf(const Number& arg)
 {
-    if (arg == Number() || arg == Number("1"))
-        return Number();
-
-    Number newnum;
-    delete[] newnum.num;
-    int newlen = arg.length;
-    newnum.num = new short[newlen];
-    for (int i = 0; i < newlen; i++)
-        newnum.num[i] = 0;
-
-    short tmp = 0;
-    for (int i = arg.length -1; i >= 0; i--) {
-        newnum.num[i] = (tmp + arg.num[i]) / 2;
-        tmp = (arg.num[i] % 2) * 10;
-    }
+    if (arg == Number("0") || arg == Number("1"))
+        return Number("0");
 
     Number result;
-    delete[] result.num;
-    if (newnum.num[newlen-1] == 0) {
-        newlen--;
-        result.num = new short[newlen];
-        for (int i = 0; i < newlen; i++)
-            result.num[i] = newnum.num[i];
-    } else {
-        result.num = newnum.num;
-        newnum.num = nullptr;
+    int newlen = arg.length;
+
+    short tmp = 0;
+    for (List<short>::iterator it = arg.num.begin(); it != arg.num.end(); it++) {
+        result.num.add( (tmp + *it) / 2 );
+        tmp = (*it % 2) * 10;
     }
-    result.length = newlen;
 
     return result;
 }
@@ -145,9 +115,7 @@ Number Number::abs(const Number & arg)
 Number::Number()
 {
     negativeNum = false;
-    length = 1;
-    num = new short[1];
-    num[0] = 0;
+    length = 0;
 }
 
 Number::Number(std::string& num_str)
@@ -155,38 +123,31 @@ Number::Number(std::string& num_str)
     if (num_str[0] == '-') {
         negativeNum = true;
         length = num_str.length() - 1;
-        num = new short[length];
         for (int i = 0; i < length; i++)
-            num[i] = char_to_short(num_str[length-i]);
+            num.add (char_to_short (num_str[i+1]) );
     } else {
         negativeNum = false;
         length = num_str.length();
-        num = new short[length];
         for (int i = 0; i < length; i++)
-            num[i] = char_to_short(num_str[length-1-i]);
+            num.add (char_to_short (num_str[i]) );
     }
-    if (length == 1 && num[0] == 0)
+    if (length == 1 && *num.begin() == 0)
         negativeNum = false;
 }
 
 Number::Number(const char * num_str)
 {
-    length = 0;
-    for (int i = 0; num_str[i] != '\0'; i++)
-        length++;
     if (num_str[0] == '-') {
         negativeNum = true;
-        length--;
-        num = new short[length];
-        for (int i = 0; i < length; i++)
-            num[i] = char_to_short(num_str[length-i]);
+        for (int i = 1; num_str[i] != '\0'; i++)
+            num.add( char_to_short(num_str[i]) );
     } else {
         negativeNum = false;
-        num = new short[length];
         for (int i = 0; i < length; i++)
-            num[i] = char_to_short(num_str[length-1-i]);
+            num.add( char_to_short(num_str[i]) );
     }
-    if (length == 1 && num[0] == 0)
+    length = num.size();
+    if (length == 1 && *num.begin() == 0)
         negativeNum = false;
 }
 
@@ -194,9 +155,8 @@ Number::Number(const Number& arg)
 {
     negativeNum = arg.negativeNum;
     length = arg.length;
-    num = new short[length];
-    for (int i = 0; i < length; i++)
-        num[i] = arg.num[i];
+    for (List<short>::iterator it = arg.num.begin(); it != arg.num.end(); it++)
+        num.add(*it);
 }
 
 Number::Number(Number&& arg)
@@ -204,15 +164,14 @@ Number::Number(Number&& arg)
     negativeNum = arg.negativeNum;
     length = arg.length;
     num = arg.num;
-    arg.num = nullptr;
 }
 
 void Number::print()
 {
     if (negativeNum)
         std::cout << '-';
-    for (int i = length-1; i >= 0; i--)
-        std::cout << num[i];
+    for (List<short>::iterator it = num.begin(); it != num.end(); it++)
+        std::cout << *it;
     std::cout << std::endl;
 }
 
@@ -226,7 +185,7 @@ Number Number::operator+ (const Number& arg)
             result.negativeNum = true;
     } else {
         if (this->abs() == arg.abs())
-            return Number();
+            return Number("0");
         if (this->abs() > arg.abs()) {
             result = subtraction(*this, arg);
             if (negativeNum)
@@ -244,7 +203,7 @@ Number Number::operator+ (const Number& arg)
 Number Number::operator- (const Number& arg)
 {
     if (*this == arg)
-        return Number();
+        return Number("0");
 
     Number result;
 
@@ -269,37 +228,35 @@ Number Number::operator- (const Number& arg)
 
 Number Number::operator* (const Number& arg)
 {
-    if (*this == Number() || arg == Number())
-        return Number();
+    if (*this == Number("0") || arg == Number("0"))
+        return Number("0");
 
     int newlen = length + arg.length;
-    short * newnum = new short[newlen];
+    List<short> newnum;
 
     for (int i = 0; i < newlen; i++)
-        newnum[i] = 0;
+        newnum.add(0);
 
-    for (int j = 0; j < arg.length; j++) {
+    List<short>::iterator it_newnum = newnum.last();
+    for (List<short>::iterator it_arg_num = arg.num.last(); it_arg_num != arg.num.end(); it_arg_num--) {
         int tmp = 0;
-        for (int i = 0; i < length; i++) {
-            short sum = newnum[i+j] + num[i] * arg.num[j] + tmp;
-            newnum[i+j] = sum % 10;
+        List<short>::iterator it_newnum2 = it_newnum;
+        for (List<short>::iterator it_num = num.last(); it_num != num.end(); it_num--) {
+            short sum = *it_newnum2 + *it_num * *it_arg_num + tmp;
+            *it_newnum2 = sum % 10;
             tmp = sum / 10;
+            it_newnum2--;
         }
-        newnum[length+j] = tmp;
+        *it_newnum2 = tmp;
+        it_newnum--;
     }
 
-    Number result;
-    delete[] result.num;
-    if (newnum[newlen-1] == 0) {
+    if (*newnum.begin() == 0) {
         --newlen;
-        result.num = new short[newlen];
-        for (int i = 0; i < newlen; i++)
-            result.num[i] = newnum[i];
-        delete[] newnum;
-    } else {
-        result.num = newnum;
-        newnum = nullptr;
+        newnum.remove(newnum.begin());
     }
+    Number result;
+    result.num = newnum;
     result.length = newlen;
 
     if ((negativeNum && !arg.negativeNum) || (!negativeNum && arg.negativeNum))
@@ -310,13 +267,13 @@ Number Number::operator* (const Number& arg)
 
 Number Number::operator/ (const Number & arg)
 {
-    if (arg == Number()) {
+    if (arg == Number("0")) {
         printf("Fatal error!");
         return arg;
     }
 
-    if (*this == Number())
-        return Number();
+    if (*this == Number("0"))
+        return Number("0");
 
     // ----dumb division---------------
     // Number result = *this;
@@ -381,15 +338,19 @@ bool Number::operator> (const Number& arg)
         result = false;
 
     if (length == arg.length) {
-        for (int i = length-1; i >= 0; i--) {
-            if (num[i] > arg.num[i]) {
+        List<short>::iterator it_num = num.begin();
+        List<short>::iterator it_arg_num = arg.num.begin();
+        while (it_num != num.end()) {
+            if (*it_num > *it_arg_num) {
                 result = true;
                 break;
             }
-            if (num[i] < arg.num[i]) {
+            if (*it_num < *it_arg_num) {
                 result = false;
                 break;
             }
+            it_num++;
+            it_arg_num++;
         }
     }
 
@@ -419,9 +380,14 @@ bool Number::operator== (const Number& arg) const
          (!negativeNum && arg.negativeNum) )
         return false;
 
-    for (int i = 0; i < length; i++)
-        if (num[i] != arg.num[i])
+    List<short>::iterator it_num = num.begin();
+    List<short>::iterator it_arg_num = arg.num.begin();
+    while (it_num != num.end()) {
+        if (*it_num != *it_arg_num)
             return false;
+        it_num++;
+        it_arg_num++;
+    }
 
     return true;
 }
@@ -435,22 +401,17 @@ bool Number::operator!= (const Number& arg) const
 
 Number& Number::operator= (const Number& arg)
 {
-    delete[] num;
     negativeNum = arg.negativeNum;
     length = arg.length;
-    num = new short[length];
-    for (int i = 0; i < length; i++)
-        num[i] = arg.num[i];
+    num = arg.num;
     return *this;
 }
 
 Number& Number::operator= (Number&& arg)
 {
-    delete[] num;
     negativeNum = arg.negativeNum;
     length = arg.length;
-    num = arg.num;
-    arg.num = nullptr;
+    num.moveAssignment(arg.num);
     return *this;
 }
 
@@ -463,5 +424,5 @@ Number Number::abs() const
 
 Number::~Number()
 {
-    delete[] num;
+    //delete num;
 }

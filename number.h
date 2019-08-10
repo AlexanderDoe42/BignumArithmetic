@@ -1,14 +1,15 @@
+#include "list.h"
 
 class Number {
 private:
-    bool    negativeNum;
-    int     length;
-    short * num; // main number
-    short   char_to_short (char c);
-    Number  addition      (const Number&);
-    Number  subtraction   (const Number&, const Number&); //the first number should be greater
-    Number  halfOf        (const Number&);
-    Number  abs           (const Number&);
+    bool        negativeNum;
+    int         length;
+    List<short> num;        // main number
+    short       char_to_short (char c);
+    Number      addition      (const Number&);
+    Number      subtraction   (const Number&, const Number&); //the first number should be greater
+    Number      halfOf        (const Number&);
+    Number      abs           (const Number&);
 
 public:
     Number ();
