@@ -256,7 +256,7 @@ Number Number::operator* (const Number& arg)
         newnum.remove(newnum.begin());
     }
     Number result;
-    result.num = newnum;
+    result.num.moveAssignment(newnum);
     result.length = newlen;
 
     if ((negativeNum && !arg.negativeNum) || (!negativeNum && arg.negativeNum))
