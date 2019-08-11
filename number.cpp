@@ -143,7 +143,7 @@ Number::Number(const char * num_str)
             num.add( char_to_short(num_str[i]) );
     } else {
         negativeNum = false;
-        for (int i = 0; i < length; i++)
+        for (int i = 0; num_str[i] != '\0'; i++)
             num.add( char_to_short(num_str[i]) );
     }
     length = num.size();
