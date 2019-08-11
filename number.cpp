@@ -143,7 +143,7 @@ Number::Number(const char * num_str)
             num.add( char_to_short(num_str[i]) );
     } else {
         negativeNum = false;
-        for (int i = 0; i < length; i++)
+        for (int i = 0; num_str[i] != '\0'; i++)
             num.add( char_to_short(num_str[i]) );
     }
     length = num.size();
@@ -256,7 +256,7 @@ Number Number::operator* (const Number& arg)
         newnum.remove(newnum.begin());
     }
     Number result;
-    result.num = newnum;
+    result.num.moveAssignment(newnum);
     result.length = newlen;
 
     if ((negativeNum && !arg.negativeNum) || (!negativeNum && arg.negativeNum))
