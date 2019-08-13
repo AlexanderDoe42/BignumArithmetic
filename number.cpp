@@ -94,13 +94,17 @@ Number Number::halfOf(const Number& arg)
         return Number("0");
 
     Number result;
-    int newlen = arg.length;
 
     short tmp = 0;
     for (List<short>::iterator it = arg.num.begin(); it != arg.num.end(); it++) {
         result.num.add( (tmp + *it) / 2 );
         tmp = (*it % 2) * 10;
     }
+
+    if (*result.num.begin() == 0)
+        result.num.remove(result.num.begin());
+
+    result.length = result.num.size();
 
     return result;
 }
@@ -282,26 +286,31 @@ Number Number::operator/ (const Number & arg)
     // }
     //---------------------------------
 
-    Number result = *this;
+    Number result = this->abs();
 
     Number minSearchBoundary("0");
-    Number maxSearchBoundary = *this;
+    Number maxSearchBoundary = this->abs();
 
-    while (abs(*this - result * arg) >= arg ) {
-        if (result * arg > *this) {
+    Number this_abs = this->abs();
+    Number arg_abs = arg.abs();
+
+    while (abs(this_abs - result * arg_abs) >= arg_abs ) {
+        if (result * arg_abs > this_abs) {
             maxSearchBoundary = result;
             result = result - halfOf(result - minSearchBoundary);
-        } else if (result * arg < *this) {
+        } else if (result * arg_abs < this_abs) {
             minSearchBoundary = result;
             result = result + halfOf(maxSearchBoundary - result);
         }
     }
 
-    if (result * arg > *this)
+    if (result * arg_abs > this_abs)
         result--;
 
     if ((negativeNum && !arg.negativeNum) || (!negativeNum && arg.negativeNum))
         result.negativeNum = true;
+
+    result.length = result.num.size();
 
     return result;
 }
@@ -424,5 +433,4 @@ Number Number::abs() const
 
 Number::~Number()
 {
-    //delete num;
 }
