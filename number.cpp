@@ -230,38 +230,129 @@ Number Number::operator- (const Number& arg)
     return result;
 }
 
+// Number Number::operator* (const Number& arg)
+// {
+//     if (*this == Number("0") || arg == Number("0"))
+//         return Number("0");
+//
+//     int newlen = length + arg.length;
+//     List<short> newnum;
+//
+//     for (int i = 0; i < newlen; i++)
+//         newnum.add(0);
+//
+//     List<short>::iterator it_newnum = newnum.last();
+//     for (List<short>::iterator it_arg_num = arg.num.last(); it_arg_num != arg.num.end(); it_arg_num--) {
+//         int tmp = 0;
+//         List<short>::iterator it_newnum2 = it_newnum;
+//         for (List<short>::iterator it_num = num.last(); it_num != num.end(); it_num--) {
+//             short sum = *it_newnum2 + *it_num * *it_arg_num + tmp;
+//             *it_newnum2 = sum % 10;
+//             tmp = sum / 10;
+//             it_newnum2--;
+//         }
+//         *it_newnum2 = tmp;
+//         it_newnum--;
+//     }
+//
+//     if (*newnum.begin() == 0) {
+//         --newlen;
+//         newnum.remove(newnum.begin());
+//     }
+//     Number result;
+//     result.num.moveAssignment(newnum);
+//     result.length = newlen;
+//
+//     if ((negativeNum && !arg.negativeNum) || (!negativeNum && arg.negativeNum))
+//         result.negativeNum = true;
+//
+//     return result;
+// }
+
+Number Number::basicMult(const Number& x, const Number& y) { //the lenth of y has to be 1
+  if (x == Number("0") || y == Number("0")) {
+    return Number("0");
+  }
+  Number result;
+  int tmp = 0;
+  for (List<short>::iterator it = x.num.last(); it != x.num.end(); it--) {
+    int p = *it * *y.num.begin() + tmp;
+    result.num.add_front(p % 10);
+    tmp = p / 10;
+  }
+  if (tmp != 0) {
+    result.num.add_front(tmp);
+  }
+  result.length = result.num.size();
+  return result;
+}
+
+void Number::getLeftPart(Number& result, const Number& n, int divLen) {
+  int size = n.length - divLen;
+  List<short>::iterator it = n.num.begin();
+  for (int i = 0; i < size; i++) {
+    result.num.add(*it);
+    it++;
+  }
+  result.length = result.num.size();
+}
+
+void Number::getRightPart(Number& result, const Number& n, int divLen) {
+  List<short>::iterator it = n.num.last();
+  for (int i = 0; i < divLen; i++) {
+    result.num.add_front(*it);
+    it--;
+  }
+  it = result.num.begin();
+  while (*it == 0 && result.num.size() != 1) {
+      result.num.remove(it);
+      it++;
+  }
+  result.length = result.num.size();
+}
+
+void Number::addZeros(Number& n, int p) {
+  for (int i = 0; i < p; i++) {
+    n.num.add(0);
+  }
+  n.length = n.num.size();
+}
+
+Number Number::karatsMult(const Number& x,const Number& y) {
+  if (x.length == 1) {
+    return basicMult(y, x);
+  }
+  if (y.length == 1) {
+    return basicMult(x, y);
+  }
+
+  int divLen = std::min(x.length, y.length) / 2;
+  Number a;
+  Number b;
+  Number c;
+  Number d;
+
+  getLeftPart(a, x, divLen);
+  getRightPart(b, x, divLen);
+  getLeftPart(c, y, divLen);
+  getRightPart(d, y, divLen);
+
+  Number ac = karatsMult(a, c);
+  Number bd = karatsMult(b, d);
+  Number adbc = karatsMult(a+b, c+d) - bd - ac;
+
+  addZeros(ac, divLen*2);
+  addZeros(adbc, divLen);
+
+  return ac + adbc + bd;
+}
+
 Number Number::operator* (const Number& arg)
 {
     if (*this == Number("0") || arg == Number("0"))
         return Number("0");
 
-    int newlen = length + arg.length;
-    List<short> newnum;
-
-    for (int i = 0; i < newlen; i++)
-        newnum.add(0);
-
-    List<short>::iterator it_newnum = newnum.last();
-    for (List<short>::iterator it_arg_num = arg.num.last(); it_arg_num != arg.num.end(); it_arg_num--) {
-        int tmp = 0;
-        List<short>::iterator it_newnum2 = it_newnum;
-        for (List<short>::iterator it_num = num.last(); it_num != num.end(); it_num--) {
-            short sum = *it_newnum2 + *it_num * *it_arg_num + tmp;
-            *it_newnum2 = sum % 10;
-            tmp = sum / 10;
-            it_newnum2--;
-        }
-        *it_newnum2 = tmp;
-        it_newnum--;
-    }
-
-    if (*newnum.begin() == 0) {
-        --newlen;
-        newnum.remove(newnum.begin());
-    }
-    Number result;
-    result.num.moveAssignment(newnum);
-    result.length = newlen;
+    Number result = karatsMult(*this, arg);
 
     if ((negativeNum && !arg.negativeNum) || (!negativeNum && arg.negativeNum))
         result.negativeNum = true;

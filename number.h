@@ -11,7 +11,13 @@ private:
     Number      halfOf        (const Number&);
     Number      abs           (const Number&);
 
-public:
+    Number      basicMult     (const Number&, const Number&);
+    void        getLeftPart   (Number&, const Number&, int);
+    void        getRightPart  (Number&, const Number&, int);
+    void        addZeros      (Number&, int);
+    Number      karatsMult    (const Number&, const Number&);
+
+  public:
     Number ();
     Number (std::string &);
     Number (const char *);
